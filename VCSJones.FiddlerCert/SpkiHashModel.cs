@@ -1,18 +1,33 @@
-﻿using System.ComponentModel;
+﻿using System;
+using System.ComponentModel;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
 namespace VCSJones.FiddlerCert
 {
     public class SpkiHashModel : INotifyPropertyChanged
     {
-        private string _hashBase64;
+        private byte[] _hash;
         private bool _isPinned;
         private PinAlgorithm _algorithm;
         private bool _reportOnly;
+        private RelayCommand _clickCommand;
+
+        public SpkiHashModel()
+        {
+            _clickCommand = new RelayCommand(parameter =>
+            {
+                var uri = parameter as Uri;
+                if (uri?.Scheme == Uri.UriSchemeHttps)
+                {
+                    Process.Start(uri.AbsoluteUri);
+                }
+            });
+        }
 
         public bool ReportOnly
         {
-            get { return _reportOnly; }
+            get => _reportOnly;
             set
             {
                 _reportOnly = value;
@@ -20,26 +35,26 @@ namespace VCSJones.FiddlerCert
             }
         }
 
-
-        public string HashBase64
+        public byte[] Hash
         {
-            get
-            {
-                return _hashBase64;
-            }
+            get => _hash;
             set
             {
-                _hashBase64 = value;
+                _hash = value;
                 OnPropertyChanged();
+                OnPropertyChanged(nameof(HashHex));
+                OnPropertyChanged(nameof(HashBase64));
+                OnPropertyChanged(nameof(CrtShUri));
             }
         }
 
+        public string HashHex => BitConverter.ToString(Hash).Replace("-", "");
+
+        public string HashBase64 => Convert.ToBase64String(Hash);
+
         public bool IsPinned
         {
-            get
-            {
-                return _isPinned;
-            }
+            get => _isPinned;
             set
             {
                 _isPinned = value;
@@ -49,13 +64,23 @@ namespace VCSJones.FiddlerCert
 
         public PinAlgorithm Algorithm
         {
-            get
-            {
-                return _algorithm;
-            }
+            get => _algorithm;
             set
             {
                 _algorithm = value;
+                OnPropertyChanged();
+                OnPropertyChanged(nameof(CrtShUri));
+            }
+        }
+
+        public Uri CrtShUri => new Uri($"https://crt.sh/?spki{Algorithm.ToString().ToLower()}={HashHex}");
+
+        public RelayCommand ClickCommand
+        {
+            get => _clickCommand;
+            set
+            {
+                _clickCommand = value;
                 OnPropertyChanged();
             }
         }

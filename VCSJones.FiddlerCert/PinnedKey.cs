@@ -1,5 +1,4 @@
 ﻿using System;
-using VCSJones.FiddlerCert.Interop;
 
 namespace VCSJones.FiddlerCert
 {
@@ -26,7 +25,7 @@ namespace VCSJones.FiddlerCert
             if (ReferenceEquals(this, other)) return true;
             if (Algorithm != other.Algorithm) return false;
             if (Fingerprint.Length != other.Fingerprint.Length) return false;
-            if (Msvcrt.memcmp(Fingerprint, other.Fingerprint, (UIntPtr) Fingerprint.Length) != 0) return false;
+            if (!Fingerprint.MemoryCompare(other.Fingerprint)) return false;
             return true;
         }
     }

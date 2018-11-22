@@ -20,12 +20,8 @@ namespace VCSJones.FiddlerCert
                 var distinguishedNamePtrCopy = distinguishedNamePtr;
                 uint pcDN = (uint)distingishedName.Length, pcKey, pcVal;
                 IntPtr ppKey, ppVal;
-                while (Ntdsapi.DsGetRdnW(ref distinguishedNamePtrCopy, ref pcDN, out ppKey, out pcKey, out ppVal, out pcVal) == 0)
+                while (pcDN != 0 && Ntdsapi.DsGetRdnW(ref distinguishedNamePtrCopy, ref pcDN, out ppKey, out pcKey, out ppVal, out pcVal) == 0)
                 {
-                    if (pcDN == 0)
-                    {
-                        break;
-                    }
                     if (pcKey == 0 || pcVal == 0)
                     {
                         continue;
